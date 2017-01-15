@@ -1,0 +1,69 @@
+﻿Properties {
+    $PublishInformation = @{
+        Path            = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
+        ReleaseNotes    = git log -1 --pretty=%s
+        ProjectURI      = "https://github.com/martin9700/PSModuleBuild"
+        LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
+        Force           = $true
+        NuGetApiKey     = $ENV:PSGalleryAPIKey
+    }
+
+    $ModuleInformation = @{
+        Path            = "$ENV:APPVEYOR_BUILD_FOLDER\Source"
+        TargetPath      = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
+        ModuleName      = "PSModuleBuild"
+        ReleaseNotes    = git log -1 --pretty=%s
+        Author          = "Martin Pugh (@TheSurlyAdm1n)"
+        ModuleVersion   = $ENV:APPVEYOR_BUILD_VERSION
+        Company         = "www.thesurlyadmin.com"
+        Description     = "Easily build PowerShell modules for a set of functions contained in individual PS1 files"
+        ProjectURI      = "https://github.com/martin9700/PSModuleBuild"
+        LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
+        PassThru        = $true
+    }
+}
+
+
+Task Default -Depends Deploy
+
+Task Init {
+    Set-Location $ENV:APPVEYOR_BUILD_FOLDER
+}
+
+Task Analyze -Depends Init {
+    $Results = Invoke-ScriptAnalyzer -Path $ENV:APPVEYOR_BUILD_FOLDER -Severity "Error" -Recurse
+    If ($Results) 
+    {
+        $Results | Format-Table  
+        Write-Error "One or more Script Analyzer errors/warnings where found. Build cannot continue!"
+    }
+}
+
+Task Build -Depends Analyze {
+    $BuildInfo = Invoke-PSModuleBuild @ModuleInformation
+    $PublishInformation.RequiredVersion = $BuildInfo.PowerShellVersion
+    $BuildInfo
+}
+
+Task Test -Depends Build  {
+    # Gather test results. Store them in a variable and file
+    $TestResults = Invoke-Pester -PassThru -OutputFormat NUnitXml -OutputFile ".\TestResults.xml"
+    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",(Resolve-Path ".\TestResults.xml"))
+    
+    If ($TestResults.FailedCount -gt 0)
+    {
+        Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed" -ErrorAction Stop
+    }
+}
+
+Task Deploy -Depends Test {
+    Try {
+        Publish-Module @PublishInformation -ErrorAction Stop
+        Write-Host "Publish to PSGallery successful" -ForegroundColor Green
+
+        $PublishInformation
+    }
+    Catch {
+        Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
+    }
+}
