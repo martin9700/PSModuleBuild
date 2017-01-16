@@ -6,7 +6,6 @@
         LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
         Force           = $true
         NuGetApiKey     = $ENV:PSGalleryAPIKey
-        RequiredVersion = $null            #We'll get this information from PSModuleBuild
     }
 
     $ModuleInformation = @{
@@ -41,9 +40,7 @@ Task Analyze -Depends Init {
 }
 
 Task Build -Depends Analyze {
-    $BuildInfo = Invoke-PSModuleBuild @ModuleInformation
-    $PublishInformation.RequiredVersion = $BuildInfo.PowerShellVersion
-    $BuildInfo
+    Invoke-PSModuleBuild @ModuleInformation
 }
 
 Task Test -Depends Build  {
