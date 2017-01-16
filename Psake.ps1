@@ -55,8 +55,6 @@ Task Deploy -Depends Test {
     Try {
         Publish-Module @PublishInformation -ErrorAction Stop
         Write-Host "Publish to PSGallery successful" -ForegroundColor Green
-
-        $PublishInformation.GetEnumerator()
     }
     Catch {
         Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
