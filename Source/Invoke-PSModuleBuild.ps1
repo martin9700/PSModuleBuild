@@ -133,6 +133,10 @@ Function Invoke-PSModuleBuild {
                 New-Item -Path $TargetPath -ItemType Directory
             }
         }
+        Else
+        {
+            $TargetPath = $Path
+        }
 
         If (-not $ModuleName)
         {

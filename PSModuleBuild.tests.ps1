@@ -1,12 +1,12 @@
 ﻿#Set up
 $ScriptPath = $PSScriptRoot
-. $ScriptPath\Publish-PSModule.ps1
+. $ScriptPath\Source\Invoke-PSModuleBuild.ps1
 
 #Clean up
 Remove-Item $ScriptPath\Test-Module -Recurse -Force -ErrorAction SilentlyContinue
 
 #Testing
-Describe "Testing Publish-PSModule module builds" {
+Describe "Testing Invoke-PSModuleBuild module builds" {
     Context "Scratch build" {
         New-Item $ScriptPath\Test-Module\Source -ItemType Directory
         New-Item $ScriptPath\Test-Module\Source\Public -ItemType Directory
@@ -39,8 +39,9 @@ Function check-me { <#this is a test#> }
 Function check-m2e{ <#this is a test#> }
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
+        Start-Sleep -Milliseconds 500
         It "Initial Build" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module } | Should Not Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
         }
         It "Manifest exists" {
             Test-Path $ScriptPath\Test-Module\Test-Module.psd1 | Should Be True
@@ -80,8 +81,9 @@ Function Test2
 }
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
+        Start-Sleep -Milliseconds 500
         It "Update Build" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module } | Should Not Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
         }
         It "Manifest exists" {
             Test-Path $ScriptPath\Test-Module\Test-Module.psd1 | Should Be True
@@ -112,7 +114,7 @@ Function Test2
     }
     Context "Specify Module Name build" {
         It "Update Build" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module -ModuleName MyModule } | Should Not Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -ModuleName MyModule } | Should Not Throw
         }
         It "Manifest exists" {
             Test-Path $ScriptPath\Test-Module\MyModule.psd1 | Should Be True
@@ -143,14 +145,14 @@ Function Test2
     }
     Context "Use Passthru parameter build" {
         It "Update Build with Passthru" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module -Passthru | Export-Clixml $ScriptPath\Test-Module\Result.xml } | Should Not Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -Passthru | Export-Clixml $ScriptPath\Test-Module\Result.xml } | Should Not Throw
         }
         $Result = Import-Clixml $ScriptPath\Test-Module\Result.xml
         It "Module name is ""Test-Module""" {
             $Result.Name | Should Be "Test-Module"
         }
-        It "Path is ""$ScriptPath\Test-Module""" {
-            $Result.Path | Should Be "$ScriptPath\Test-Module"
+        It "Source Path is ""$ScriptPath\Test-Module""" {
+            $Result.SourcePath | Should Be "$ScriptPath\Test-Module"
         }
         It "ManifestPath is ""$ScriptPath\Test-Module\Test-Module.psd1""" {
             $Result.ManifestPath | Should Be "$ScriptPath\Test-Module\Test-Module.psd1"
@@ -176,8 +178,9 @@ Function Test1
 }
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
+        Start-Sleep -Milliseconds 500
         It "Duplicate function name build should fail" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module } | Should Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Throw
         }
     }
     Context "Error in function build" {
@@ -196,7 +199,7 @@ Function Test2
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
         It "Error in function Test2 should fail" {
-            { Publish-PSModule -Path $ScriptPath\Test-Module } | Should Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Throw
         }
     }
 }

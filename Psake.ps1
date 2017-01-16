@@ -1,7 +1,7 @@
 ﻿Properties {
     $PublishInformation = @{
         Path            = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
-        ReleaseNotes    = git log -1 --pretty=%s
+        ReleaseNotes    = git log -1 --pretty=%s | Out-String
         ProjectURI      = "https://github.com/martin9700/PSModuleBuild"
         LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
         Force           = $true
@@ -13,7 +13,7 @@
         Path            = "$ENV:APPVEYOR_BUILD_FOLDER\Source"
         TargetPath      = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
         ModuleName      = "PSModuleBuild"
-        ReleaseNotes    = git log -1 --pretty=%s
+        ReleaseNotes    = git log -1 --pretty=%s | Out-String
         Author          = "Martin Pugh (@TheSurlyAdm1n)"
         ModuleVersion   = $ENV:APPVEYOR_BUILD_VERSION
         Company         = "www.thesurlyadmin.com"
