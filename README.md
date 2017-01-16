@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/34niek0gckruqqlq/branch/master?svg=true)](https://ci.appveyor.com/project/MartinPugh/publish-psmodule/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild)
 
 #TOPIC
     Building PowerShell Modules with PSModuleBuild
