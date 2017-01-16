@@ -10,3 +10,4 @@ build:
   
 build_script:
 #  - ps: . .\build.ps1
+  - ps: write-host "Build successful"
