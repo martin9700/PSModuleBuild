@@ -5,39 +5,40 @@ Function Invoke-PSModuleBuild {
         Easily build PowerShell modules for a set of functions contained in individual PS1 files
 
     .DESCRIPTION
-        Put a collection of your favorite functions into their own PS1 files create a PowerShell module.  The module will 
-        be named after the folder name they're placed under. Key folders can be used to specify different file types. Unless
-        the path name contains one of the below key names, all functions will be exported by the module and available to the
-        user.
+        Creating a PowerShell module can be hard, and maintaining it can be even harder.  PSModuleBuild has been designed to make
+        both tasks easier.  In short, you put all of your advanced functions into individual .ps1 files and then invoke PSModuleBuild
+        and let it collect all the functions into a PowerShell module file (.psm1) and create the PowerShell module manifest
+        file (.psd1).
 
-        Include.txt - Sometimes you want some code to set the environment for your module, or to do some task.  While not 
-                      necessary, if you want the code to appear at the top of the module you can use Include.txt to accomplish
-                      this.  Do not place any functions in this file because script will not process it, it just puts it
-                      into the module file.
+        Files can be excluded from processing by putting these keywords in their name:
+            exclude
+            tests
+            psake\.ps1
+            ^build\.ps1$
+            \.psdeploy\.
 
-        *Private*   - if Private is in the path name, all functions found in this path will be not be exported and will not
-                      be available to the user. However, they will be available as internal functions to the module.
-        *Exclude*   - any files found with Exclude in the path name will not be included in the module at all.
-        *Tests*     - any files found with Tests in the path name will not be included in the module at all (put your Pester
-                      tests here).
+        If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt
+        file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed
+        as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at
+        the beginning of the file you can.
 
-        Manifest file for the module will also be created with the correct PowerShell version requirement (assuming you
-        specified this with the "#requires -Version" code in your functions).
-
-        Manifest file can also be edited to suit your requirements.
 
     .PARAMETER Path
         The path where you module folders and PS1 files containing your functions is located.
 
+    .PARAMETER TargetPath
+        The path where you want the module and manifest files to be located. If it does not exist Invoke-PSModuleBuild will create it.
+
     .PARAMETER ModuleName
         What you want to call your module. By default the module will be named after the folder you point
         to in Path.
-    
-    .PARAMETER BuildVersion
-        Update the ModuleVersion field in the module manifest
 
     .PARAMETER Passthru
         Will produce an object with information about the newly created module
+
+    .PARAMETER ReleaseNotes
+        Any release notes you want to include in the module manifest.  If a manifest file already exists Invoke-PSModuleBuild will
+        read the release notes from it and join the new release notes together.
 
     .INPUTS
         None
@@ -77,6 +78,7 @@ Function Invoke-PSModuleBuild {
         1.0.12          Removed BuildVersion.  Added dynamic parameters from New-ModuleManifest.
         1.0.13          Removed a debugging line.
         1.0.14          Rename to Invoke-PSModuleBuild and create module named PSModuleBuild.  Added ReleaseNotes support (New and Update-ModuleManifest treat ReleaseNotes differently)
+        1.0.15          Updated comment based help
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
