@@ -9,5 +9,4 @@ build:
   verbosity: detailed
   
 build_script:
-#  - ps: . .\build.ps1
-  - ps: write-host "Build successful"
+  - ps: . .\build.ps1

@@ -6,6 +6,7 @@
         LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
         Force           = $true
         NuGetApiKey     = $ENV:PSGalleryAPIKey
+        RequiredVersion = $null            #We'll get this information from PSModuleBuild
     }
 
     $ModuleInformation = @{
