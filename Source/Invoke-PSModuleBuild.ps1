@@ -213,7 +213,7 @@ Function Invoke-PSModuleBuild {
         }
         If (Test-Path $ManifestPath)
         {
-            $OldManifest = Invoke-Expression -Command (Get-Content $ManifestPath -Raw)
+            $OldManifest = Import-LocalizedData -BaseDirectory (Split-Path $ManifestPath) -FileName (Split-Path $ManifestPath -Leaf)
             If ([version]$OldManifest.PowerShellVersion -gt $HighVersion)
             {
                 $HighVersion = [version]$OldManifest.PowerShellVersion
@@ -268,7 +268,7 @@ Function Invoke-PSModuleBuild {
                 RequiredVersion  = $Manifest.PowerShellVersion
                 PublicFunctions  = @($FunctionNames | Where Private -eq $false | Select -ExpandProperty Name)
                 PrivateFunctions = @($FunctionNames | Where Private -eq $true | Select -ExpandProperty Name)
-                ReleaseNotes     = $ReleaseNotes
+                ReleaseNotes     = $Manifest.ReleaseNotes
             }
         }
 

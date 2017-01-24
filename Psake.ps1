@@ -16,6 +16,7 @@
         Description     = "Easily build PowerShell modules for a set of functions contained in individual PS1 files"
         ProjectURI      = "https://github.com/martin9700/PSModuleBuild"
         LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
+        IconURI         = "https://pughspace.files.wordpress.com/2017/01/pspublishmodule-icon.png"
         PassThru        = $true
     }
 }
