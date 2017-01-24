@@ -213,6 +213,7 @@ Function Invoke-PSModuleBuild {
         }
         If (Test-Path $ManifestPath)
         {
+            $OldManifest = Import-LocalizedData -BaseDirectory (Split-Path $ManifestPath) -FileName (Split-Path $ManifestPath -Leaf)
             If ([version]$OldManifest.PowerShellVersion -gt $HighVersion)
             {
                 $HighVersion = [version]$OldManifest.PowerShellVersion
