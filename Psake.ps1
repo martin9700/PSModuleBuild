@@ -52,8 +52,7 @@ Task Test -Depends Build  {
     }
 }
 
-Task Deploy -Depends Test {
-    <#
+Task Deploy -Depends Test -Precondition { $ENV:APPVEYOR_FORCED_BUILD -eq "True" } {
     Try {
         Publish-Module @PublishInformation -ErrorAction Stop
         Write-Host "Publish to PSGallery successful" -ForegroundColor Green
@@ -61,5 +60,4 @@ Task Deploy -Depends Test {
     Catch {
         Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
     }
-    #>
 }
