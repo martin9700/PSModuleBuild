@@ -22,7 +22,7 @@
 }
 
 
-Task Default -Depends Deploy
+Task Default -Depends Test,Deploy
 
 Task Init {
     Set-Location $ENV:APPVEYOR_BUILD_FOLDER
