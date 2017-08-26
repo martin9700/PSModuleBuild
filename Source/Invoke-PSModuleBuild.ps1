@@ -264,6 +264,7 @@ Function Invoke-PSModuleBuild {
         {
             $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
             $Module | Out-File $ModulePath -Encoding ascii
+            Write-Verbose "Module created at: $TP as $ModuleName" -Verbose
         }
 
         #Passthru
@@ -282,7 +283,6 @@ Function Invoke-PSModuleBuild {
             }
         }
 
-        Write-Verbose "Module created at: $Path as $ModuleName" -Verbose
         Write-Verbose "$(Get-Date): Invoke-PSModuleBuild completed."
     }
 }
