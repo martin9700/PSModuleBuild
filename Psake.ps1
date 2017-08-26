@@ -3,7 +3,6 @@
         Path            = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
         Force           = $true
         NuGetApiKey     = $ENV:PSGalleryAPIKey
-        FormatVersion   = $ENV:APPVEYOR_BUILD_VERSION
     }
 
     $ModuleInformation = @{
