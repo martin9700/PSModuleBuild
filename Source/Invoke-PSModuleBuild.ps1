@@ -17,6 +17,12 @@ Function Invoke-PSModuleBuild {
             ^build\.ps1$
             \.psdeploy\.
 
+        Public and private functions are also support by creating the proper folder structure:
+
+        \Source
+           \Public
+           \Private
+
         If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt
         file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed
         as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at
@@ -27,7 +33,9 @@ Function Invoke-PSModuleBuild {
         The path where you module folders and PS1 files containing your functions is located.
 
     .PARAMETER TargetPath
-        The path where you want the module and manifest files to be located. If it does not exist Invoke-PSModuleBuild will create it.
+        The path where you want the module and manifest files to be located. If the folder does not exist Invoke-PSModuleBuild will create it, if
+        it is not designated it will use the Path location.  Multiple folder paths can be designated as well if you want to deploy to multiple
+        locations.
 
     .PARAMETER ModuleName
         What you want to call your module. By default the module will be named after the folder you point
@@ -79,6 +87,7 @@ Function Invoke-PSModuleBuild {
         1.0.13          Removed a debugging line.
         1.0.14          Rename to Invoke-PSModuleBuild and create module named PSModuleBuild.  Added ReleaseNotes support (New and Update-ModuleManifest treat ReleaseNotes differently)
         1.0.15          Updated comment based help
+        1.1             Added multiple target paths
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>

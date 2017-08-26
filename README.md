@@ -38,6 +38,11 @@
 	as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at
 	the beginning of the file you can.
 	
+	Public/Private Functions
+	========================
+	PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private 
+	folder and place your function files appropriately.  
+	
 
 #EXAMPLES
 	Simple
@@ -73,7 +78,8 @@
 	--------------------------------------
 	If you have about files, or additional XML descriptor files, PSModuleBuild will support that.  First create a project folder,
 	then create a source folder and place all of your function files in there.  Now create another folder with the name of your
-	module (we'll use NewModule in this example) and place all of your files in them in the proper folder structure.
+	module (we'll use NewModule in this example) and place your about files, and other files there, in the proper folder structure
+	(en-US, etc).
 	
 	$BuildSplat = @{
 	   Path = "c:\ProjectFolder\Source"   
@@ -101,6 +107,24 @@
 	   Description = "This is that new module I've been working on"
 	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
 	   ReleaseNotes = "Initial commit"
+	   Passthru = $true
+	}
+	Invoke-PSModuleBuild @BuildSplat
+	
+	
+	Advanced - Mulitple Target Paths
+	--------------------------------
+	Need to deploy the module to multiple paths?  Maybe you have a primary production location but also a process running
+	in a DMZ?
+	
+	$BuildSplat = @{
+	   Path = "c:\ProjectFolder\NewModule\Source"   
+	   TargetPath = "c:\ProjectFolder\NewModule","\\dmzserver\share\Modules\NewModule"    #this is optional now, Invoke-PSModuleBuild goes here by default
+	   ModuleName = "NewModule"
+	   Author = "@thesurlyadm1n"
+	   Description = "This is that new module I've been working on"
+	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
+	   ReleaseNotes = (git log -1 --pretty=%s) | Out-String   #Pull release notes from your git commits
 	   Passthru = $true
 	}
 	Invoke-PSModuleBuild @BuildSplat
