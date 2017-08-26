@@ -86,7 +86,7 @@ Function Invoke-PSModuleBuild {
     Param (
         [ValidateScript({ Test-Path $_ })]
         [string]$Path,
-        [string]$TargetPath,
+        [string[]]$TargetPath,
         [string]$ModuleName,
         [switch]$Passthru,
         [string[]]$ReleaseNotes
@@ -130,9 +130,12 @@ Function Invoke-PSModuleBuild {
 
         If ($TargetPath)
         {
-            If (-not (Test-Path $TargetPath))
+            ForEach ($TP in $TargetPath)
             {
-                New-Item -Path $TargetPath -ItemType Directory
+                If (-not (Test-Path $TP))
+                {
+                    New-Item -Path $TP -ItemType Directory
+                }
             }
         }
         Else
@@ -205,56 +208,63 @@ Function Invoke-PSModuleBuild {
         #Create the manifest file
         Write-Verbose "$(Get-Date): Creating/Updating module manifest and module file"
         $Manifest = @{}
-        $ManifestPath = Join-Path $TargetPath -ChildPath "$ModuleName.psd1"
+        
 
         ForEach ($Key in ($PSBoundParameters.GetEnumerator() | Where { $_.Key -NotMatch "Path|Passthru|ModuleName" -and $CommonParams -notcontains $_.Key }))
         {
             $Manifest.Add($Key.Key,$Key.Value)
         }
-        If (Test-Path $ManifestPath)
+        ForEach ($TP in $TargetPath)
         {
-            $OldManifest = Import-LocalizedData -BaseDirectory (Split-Path $ManifestPath) -FileName (Split-Path $ManifestPath -Leaf)
-            If ([version]$OldManifest.PowerShellVersion -gt $HighVersion)
+            $ManifestPath = Join-Path -Path $TP -ChildPath "$ModuleName.psd1"
+            If (Test-Path $ManifestPath)
             {
-                $HighVersion = [version]$OldManifest.PowerShellVersion
+                $OldManifest = Import-LocalizedData -BaseDirectory (Split-Path $ManifestPath) -FileName (Split-Path $ManifestPath -Leaf)
+                If ([version]$OldManifest.PowerShellVersion -gt $HighVersion)
+                {
+                    $HighVersion = [version]$OldManifest.PowerShellVersion
+                }
+                If ($OldManifest.PrivateData.PSData.ReleaseNotes)
+                {
+                    $Manifest.ReleaseNotes = $ReleaseNotes + $OldManifest.PrivateData.PSData.ReleaseNotes
+                }
+                If ($Manifest.PowerShellVersion -gt $HighVersion)
+                {
+                    $HighVersion = $Manifest.PowerShellVersion
+                }
+                $Manifest.Path = $ManifestPath
+                $Manifest.PowerShellVersion = $HighVersion
+                $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
+                If ($BuildVersion)
+                {
+                    $Manifest.Add("ModuleVersion",$BuildVersion)
+                }
+                Update-ModuleManifest @Manifest
             }
-            If ($OldManifest.PrivateData.PSData.ReleaseNotes)
+            Else
             {
-                $Manifest.ReleaseNotes = $ReleaseNotes + $OldManifest.PrivateData.PSData.ReleaseNotes
+                $Manifest.RootModule = $ModuleName
+                $Manifest.Path = $ManifestPath
+                $Manifest.PowerShellVersion = "$($HighVersion.Major).$($HighVersion.Minor)"
+                $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
+                If ($BuildVersion)
+                {
+                    $Manifest.Add("ModuleVersion",$BuildVersion)
+                }
+                If ($ReleaseNotes)
+                {
+                    $Manifest.ReleaseNotes = $ReleaseNotes | Out-String
+                }
+                New-ModuleManifest @Manifest
             }
-            If ($Manifest.PowerShellVersion -gt $HighVersion)
-            {
-                $HighVersion = $Manifest.PowerShellVersion
-            }
-            $Manifest.Path = $ManifestPath
-            $Manifest.PowerShellVersion = $HighVersion
-            $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
-            If ($BuildVersion)
-            {
-                $Manifest.Add("ModuleVersion",$BuildVersion)
-            }
-            Update-ModuleManifest @Manifest
-        }
-        Else
-        {
-            $Manifest.RootModule = $ModuleName
-            $Manifest.Path = $ManifestPath
-            $Manifest.PowerShellVersion = "$($HighVersion.Major).$($HighVersion.Minor)"
-            $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
-            If ($BuildVersion)
-            {
-                $Manifest.Add("ModuleVersion",$BuildVersion)
-            }
-            If ($ReleaseNotes)
-            {
-                $Manifest.ReleaseNotes = $ReleaseNotes | Out-String
-            }
-            New-ModuleManifest @Manifest
         }
 
         #Save the Module file
-        $ModulePath = Join-Path -Path $TargetPath -ChildPath "$ModuleName.psm1"
-        $Module | Out-File $ModulePath -Encoding ascii
+        ForEach ($TP in $TargetPath)
+        {
+            $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
+            $Module | Out-File $ModulePath -Encoding ascii
+        }
 
         #Passthru
         If ($Passthru)
