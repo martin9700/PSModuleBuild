@@ -167,6 +167,23 @@ Function Test2
             $Result.PrivateFunctions.Count | Should Be 1
         }
     }
+    Context "Create module in two locations" {
+        It "Build with 2 target paths" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -TargetPath "$ScriptPath\Test-Module","$ScriptPath\Test-Module\Location2" } | Should Not Throw
+        }
+        It "Module file Exists in location 1" {
+            Test-Path $ScriptPath\Test-Module\Test-Module.psm1 | Should Be True
+        }
+        It "Manifest file Exists in location 1" {
+            Test-Path $ScriptPath\Test-Module\Test-Module.psd1 | Should Be True
+        }
+        It "Module file Exists in locations 2" {
+            Test-Path $ScriptPath\Test-Module\Location2\Test-Module.psm1 | Should Be True
+        }
+        It "Manifest file Exists in locations 2" {
+            Test-Path $ScriptPath\Test-Module\Location2\Test-Module.psd1 | Should Be True
+        }
+    }
     Context "Duplicate function name build" {
         $Module = @"
 Function Test1 {
@@ -200,23 +217,6 @@ Function Test2
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
         It "Error in function Test2 should fail" {
             { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Throw
-        }
-    }
-    Context "Create module in two locations" {
-        It "Build with 2 target paths" {
-            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -TargetPath "$ScriptPath\Test-Module","$ScriptPath\Test-Module\Location2" } | Should Not Throw
-        }
-        It "Module file Exists in location 1" {
-            Test-Path $ScriptPath\Test-Module\Test-Module.psm1 | Should Be True
-        }
-        It "Manifest file Exists in location 1" {
-            Test-Path $ScriptPath\Test-Module\Test-Module.psd1 | Should Be True
-        }
-        It "Module file Exists in locations 2" {
-            Test-Path $ScriptPath\Test-Module\Location2\Test-Module.psm1 | Should Be True
-        }
-        It "Manifest file Exists in locations 2" {
-            Test-Path $ScriptPath\Test-Module\Location2\Test-Module.psd1 | Should Be True
         }
     }
 }
