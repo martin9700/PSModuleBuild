@@ -1,28 +1,25 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild)
 
-#TOPIC
-    Building PowerShell Modules with PSModuleBuild
+# TOPIC
 
-#SHORT DESCRIPTION
-	Creating a PowerShell module can be hard, and maintaining it can be even harder.  PSModuleBuild has been designed to make
-	both tasks easier.  In short, you put all of your advanced functions into individual .ps1 files and then invoke PSModuleBuild
-	and let it collect all the functions into a PowerShell module file (.psm1) and create the PowerShell module manifest
-	file (.psd1).
+Building PowerShell Modules with PSModuleBuild
+
+# SHORT DESCRIPTION
+Creating a PowerShell module can be hard, and maintaining it can be even harder.  PSModuleBuild has been designed to make both tasks easier.  In short, you put all of your advanced functions into individual .ps1 files and then invoke PSModuleBuild and let it collect all the functions into a PowerShell module file (.psm1) and create the PowerShell module manifest file (.psd1).
 	
-#DETAILED DESCRIPTION
+# DETAILED DESCRIPTION
 	
-	Installation
-	============
-	Use the PowerShell Gallery to install PSModuleBuild:
+Installation
+============
+Use the PowerShell Gallery to install PSModuleBuild:
 	
 	Install-Module PSModuleBuild
 	Import-Module PSModuleBuild
 	
 	
-	Continuous Integration/Continuous Deployment Support
-	====================================================
-	I tried to make PSModuleBuild friendly to CI/CD, specifically some of the community accepted standards for CI like
-	Pester, Psake, etc. by putting in a filter that excludes files with certain keywords in them:
+Continuous Integration/Continuous Deployment Support
+====================================================
+I tried to make PSModuleBuild friendly to CI/CD, specifically some of the community accepted standards for CI like Pester, Psake, etc. by putting in a filter that excludes files with certain keywords in them:
 	
 	exclude
 	tests
@@ -31,32 +28,28 @@
 	\.psdeploy\.
 	
 	
-	Include.txt
-	===========
-	If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt
-	file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed
-	as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at
-	the beginning of the file you can.
+Include.txt
+===========
+If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at the beginning of the file you can.
 	
-	Public/Private Functions
-	========================
-	PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private 
-	folder and place your function files appropriately.  
+Public/Private Functions
+========================
+PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private folder and place your function files appropriately.  
 	
 
-#EXAMPLES
-	Simple
-	------
-	Create a folder, put your function files in it.
+# EXAMPLES
+
+Simple
+------
+Create a folder, put your function files in it.
 	
 	Invoke-PSModuleBuild -Path c:\YourModule
 	
-	This will read all of the function files in c:\YourModule and create a module named after the folder (YourModule).
+This will read all of the function files in c:\YourModule and create a module named after the folder (YourModule).
 	
-	
-	Intermediate
-	------------
-	Same as simple, but you want to put more information in:
+Intermediate
+------------
+Same as simple, but you want to put more information in:
 	
 	$BuildSplat = @{
 	   Path = "c:\YourModule"   
@@ -70,16 +63,12 @@
 	}
 	Invoke-PSModuleBuild @BuildSplat
 	
-	This will create a new module, in a different location and fill the module manifest with the information.  Invoke-PSModuleBuild
-	supports all of the parameters from New-ModuleManifest.
+This will create a new module, in a different location and fill the module manifest with the information.  Invoke-PSModuleBuild	supports all of the parameters from New-ModuleManifest.
 	
 	
-	Advanced - Additional supporting files
-	--------------------------------------
-	If you have about files, or additional XML descriptor files, PSModuleBuild will support that.  First create a project folder,
-	then create a source folder and place all of your function files in there.  Now create another folder with the name of your
-	module (we'll use NewModule in this example) and place your about files, and other files there, in the proper folder structure
-	(en-US, etc).
+Advanced - Additional supporting files
+--------------------------------------
+If you have about files, or additional XML descriptor files, PSModuleBuild will support that.  First create a project folder, then create a source folder and place all of your function files in there.  Now create another folder with the name of your module (we'll use NewModule in this example) and place your about files, and other files there, in the proper folder structure (en-US, etc).
 	
 	$BuildSplat = @{
 	   Path = "c:\ProjectFolder\Source"   
@@ -94,10 +83,9 @@
 	Invoke-PSModuleBuild @BuildSplat
 	
 	
-	Advanced - Include source files in the module
-	---------------------------------------------
-	If you want to include the source function files in your module create a project folder, then create a folder with
-	the name of your project and place all your function files (and other supporting files) in it.
+Advanced - Include source files in the module
+---------------------------------------------
+If you want to include the source function files in your module create a project folder, then create a folder with the name of your project and place all your function files (and other supporting files) in it.
 	
 	$BuildSplat = @{
 	   Path = "c:\ProjectFolder\NewModule"   
@@ -112,10 +100,9 @@
 	Invoke-PSModuleBuild @BuildSplat
 	
 	
-	Advanced - Mulitple Target Paths
-	--------------------------------
-	Need to deploy the module to multiple paths?  Maybe you have a primary production location but also a process running
-	in a DMZ?
+Advanced - Mulitple Target Paths
+--------------------------------
+Need to deploy the module to multiple paths?  Maybe you have a primary production location but also a process running in a DMZ?
 	
 	$BuildSplat = @{
 	   Path = "c:\ProjectFolder\NewModule\Source"   
@@ -130,10 +117,11 @@
 	Invoke-PSModuleBuild @BuildSplat
 
 
-#SEE ALSO
-    Continuous Integration
-	Continuous Deployment
-	PSDeploy
-	Psake
-	PSScriptAnalyzer
+# SEE ALSO
+
+Continuous Integration
+- Continuous Deployment
+- PSDeploy
+- Psake
+- PSScriptAnalyzer
 	
