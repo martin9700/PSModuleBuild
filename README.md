@@ -1,13 +1,13 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild)
 
-#TOPIC
+# TOPIC
 
 Building PowerShell Modules with PSModuleBuild
 
-#SHORT DESCRIPTION
+# SHORT DESCRIPTION
 Creating a PowerShell module can be hard, and maintaining it can be even harder.  PSModuleBuild has been designed to make both tasks easier.  In short, you put all of your advanced functions into individual .ps1 files and then invoke PSModuleBuild and let it collect all the functions into a PowerShell module file (.psm1) and create the PowerShell module manifest file (.psd1).
 	
-#DETAILED DESCRIPTION
+# DETAILED DESCRIPTION
 	
 Installation
 ============
@@ -37,7 +37,7 @@ Public/Private Functions
 PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private folder and place your function files appropriately.  
 	
 
-#EXAMPLES
+# EXAMPLES
 
 Simple
 ------
@@ -117,7 +117,7 @@ Need to deploy the module to multiple paths?  Maybe you have a primary productio
 	Invoke-PSModuleBuild @BuildSplat
 
 
-#SEE ALSO
+# SEE ALSO
 
 Continuous Integration
 - Continuous Deployment
