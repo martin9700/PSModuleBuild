@@ -13,7 +13,7 @@
         Author          = "Martin Pugh (@TheSurlyAdm1n)"
         ModuleVersion   = $ENV:APPVEYOR_BUILD_VERSION
         Company         = "www.thesurlyadmin.com"
-        Description     = "Easily build PowerShell modules for a set of functions contained in individual PS1 files"
+        Description     = "Easily build a PowerShell module and manifest from a set of functions contained in individual PS1 files"
         ProjectURI      = "https://github.com/martin9700/PSModuleBuild"
         LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
         IconURI         = "https://pughspace.files.wordpress.com/2017/01/pspublishmodule-icon.png"

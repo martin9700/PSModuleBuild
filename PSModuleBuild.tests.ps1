@@ -211,7 +211,6 @@ Function Test2
     {
         $Something ++
     }
-    #Duplicate Function Name
 }
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1

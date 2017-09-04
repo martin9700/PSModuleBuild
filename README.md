@@ -119,7 +119,7 @@
 	
 	$BuildSplat = @{
 	   Path = "c:\ProjectFolder\NewModule\Source"   
-	   TargetPath = "c:\ProjectFolder\NewModule","\\dmzserver\share\Modules\NewModule"    #this is optional now, Invoke-PSModuleBuild goes here by default
+	   TargetPath = "c:\ProjectFolder\NewModule","\\dmzserver\share\Modules\NewModule" 
 	   ModuleName = "NewModule"
 	   Author = "@thesurlyadm1n"
 	   Description = "This is that new module I've been working on"
