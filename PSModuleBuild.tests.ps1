@@ -1,6 +1,7 @@
 ﻿#Set up
 $ScriptPath = $PSScriptRoot
-. $ScriptPath\Source\Invoke-PSModuleBuild.ps1
+. $ScriptPath\Source\Public\Invoke-PSModuleBuild.ps1
+. $ScriptPath\Source\Private\CreateUpdateManifest.ps1
 
 #Clean up
 Remove-Item $ScriptPath\Test-Module -Recurse -Force -ErrorAction SilentlyContinue
@@ -57,6 +58,10 @@ Function check-m2e{ <#this is a test#> }
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "PowerShellVersion = '3.0'"
             $Search.Count | Should Be 1
         }
+        It "Module Version set to 1.0" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '1.0'"
+            $Search.Count | Should Be 1
+        }
         It "Private function exists in module" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Function Private-Function { <#this is a test#> }"
             $Search.Count | Should Be 1
@@ -99,6 +104,10 @@ Function Test2
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "PowerShellVersion = '3.0'"
             $Search.Count | Should Be 1
         }
+        It "Module Version set to 1.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '1.1'"
+            $Search.Count | Should Be 1
+        }
         It "Private function exists in module" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Function Private-Function { <#this is a test#> }"
             $Search.Count | Should Be 1
@@ -109,6 +118,50 @@ Function Test2
         }
         It "Include.txt exists in module file" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
+            $Search.Count | Should Be 1
+        }
+    }
+    Context "Automatic Version increments" {
+        It "Update Build - No version increment" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion None } | Should Not Throw
+        }
+        It "ModuleVersion still 1.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '1.1'"
+            $Search.Count | Should Be 1
+        }
+        It "Update Build - increment revision, when build and revision don't exist" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion Revision } | Should Not Throw
+        }
+        It "ModuleVersion set to 1.1.0.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '1.1.0.1'"
+            $Search.Count | Should Be 1
+        }
+        It "Update Build - increment Major" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion Major } | Should Not Throw
+        }
+        It "ModuleVersion set to 2.1.0.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '2.1.0.1'"
+            $Search.Count | Should Be 1
+        }
+        It "Update Build - increment Minor" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion Minor } | Should Not Throw
+        }
+        It "ModuleVersion set to 2.2.0.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '2.2.0.1'"
+            $Search.Count | Should Be 1
+        }
+        It "Update Build - increment Build" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion Build } | Should Not Throw
+        }
+        It "ModuleVersion set to 2.2.1.1" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '2.2.1.1'"
+            $Search.Count | Should Be 1
+        }
+        It "Update Build - increment Revision" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -IncrementVersion Revision } | Should Not Throw
+        }
+        It "ModuleVersion set to 2.2.1.2" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "ModuleVersion = '2.2.1.2'"
             $Search.Count | Should Be 1
         }
     }

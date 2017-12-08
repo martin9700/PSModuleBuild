@@ -48,6 +48,16 @@ Function Invoke-PSModuleBuild {
         Any release notes you want to include in the module manifest.  If a manifest file already exists Invoke-PSModuleBuild will
         read the release notes from it and join the new release notes together.
 
+    .PARAMETER IncrementVersion
+        If a previous manifest file is located, PSModuleBuild will automatically increment the version number (unless you set this parameter to
+        "None").  Set which field you want to increment "major", "minor", "build" or "revision" or set it to "last" and it will increment the last
+        field that previous existed.  For example:
+
+        1.1 would become 1.2
+        1.0.0.3 would become 1.0.0.4
+
+        Default settings is "Last"
+
     .INPUTS
         None
     
@@ -88,6 +98,7 @@ Function Invoke-PSModuleBuild {
         1.0.14          Rename to Invoke-PSModuleBuild and create module named PSModuleBuild.  Added ReleaseNotes support (New and Update-ModuleManifest treat ReleaseNotes differently)
         1.0.15          Updated comment based help
         1.1             Added multiple target paths
+        1.1.38          Fixed bug with release notes. Added IncrementVersion
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
@@ -98,7 +109,9 @@ Function Invoke-PSModuleBuild {
         [string[]]$TargetPath,
         [string]$ModuleName,
         [switch]$Passthru,
-        [string[]]$ReleaseNotes
+        [string[]]$ReleaseNotes,
+        [ValidateSet("None","Last","Major","Minor","Build","Revision")]
+        [string]$IncrementVersion = "Last"
     )
     DynamicParam {
         # Create the dictionary that this scriptblock will return:
@@ -129,7 +142,7 @@ Function Invoke-PSModuleBuild {
         $DynParamDictionary
     }
 
-    PROCESS {
+    END {
         Write-Verbose "$(Get-Date): Invoke-PSModuleBuild started"
 
         If (-not $Path)
@@ -216,79 +229,39 @@ Function Invoke-PSModuleBuild {
 
         #Create the manifest file
         Write-Verbose "$(Get-Date): Creating/Updating module manifest and module file"
-        $Manifest = @{}
+        $NewManifest = @{}
         
 
-        ForEach ($Key in ($PSBoundParameters.GetEnumerator() | Where { $_.Key -NotMatch "Path|Passthru|ModuleName" -and $CommonParams -notcontains $_.Key }))
+        ForEach ($Key in ($PSBoundParameters.GetEnumerator() | Where { $_.Key -NotMatch "Path|Passthru|ModuleName|IncrementVersion" -and $CommonParams -notcontains $_.Key }))
         {
-            $Manifest.Add($Key.Key,$Key.Value)
+            $NewManifest.Add($Key.Key,$Key.Value)
         }
         ForEach ($TP in $TargetPath)
         {
+            #Save the manifest
             $ManifestPath = Join-Path -Path $TP -ChildPath "$ModuleName.psd1"
-            If (Test-Path $ManifestPath)
-            {
-                $OldManifest = Import-LocalizedData -BaseDirectory (Split-Path $ManifestPath) -FileName (Split-Path $ManifestPath -Leaf)
-                If ([version]$OldManifest.PowerShellVersion -gt $HighVersion)
-                {
-                    $HighVersion = [version]$OldManifest.PowerShellVersion
-                }
-                If ($OldManifest.PrivateData.PSData.ReleaseNotes)
-                {
-                    $Manifest.ReleaseNotes = $ReleaseNotes + $OldManifest.PrivateData.PSData.ReleaseNotes
-                }
-                If ($Manifest.PowerShellVersion -gt $HighVersion)
-                {
-                    $HighVersion = $Manifest.PowerShellVersion
-                }
-                $Manifest.Path = $ManifestPath
-                $Manifest.PowerShellVersion = $HighVersion
-                $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
-                If ($BuildVersion)
-                {
-                    $Manifest.Add("ModuleVersion",$BuildVersion)
-                }
-                Update-ModuleManifest @Manifest
-            }
-            Else
-            {
-                $Manifest.RootModule = $ModuleName
-                $Manifest.Path = $ManifestPath
-                $Manifest.PowerShellVersion = "$($HighVersion.Major).$($HighVersion.Minor)"
-                $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
-                If ($BuildVersion)
-                {
-                    $Manifest.Add("ModuleVersion",$BuildVersion)
-                }
-                If ($ReleaseNotes)
-                {
-                    $Manifest.ReleaseNotes = $ReleaseNotes | Out-String
-                }
-                New-ModuleManifest @Manifest
-            }
-        }
+            $ResultManifest = CreateUpdateManifest -Manifest $NewManifest.Clone() -OldManifestPath $ManifestPath
 
-        #Save the Module file
-        ForEach ($TP in $TargetPath)
-        {
+            #Save the module file
             $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
             $Module | Out-File $ModulePath -Encoding ascii
             Write-Verbose "Module created at: $TP as $ModuleName" -Verbose
-        }
 
-        #Passthru
-        If ($Passthru)
-        {
-            [PSCustomObject]@{
-                Name             = $ModuleName
-                SourcePath       = $Path
-                TargetPath       = $TargetPath
-                ManifestPath     = $ManifestPath
-                ModulePath       = $ModulePath
-                RequiredVersion  = $Manifest.PowerShellVersion
-                PublicFunctions  = @($FunctionNames | Where Private -eq $false | Select -ExpandProperty Name)
-                PrivateFunctions = @($FunctionNames | Where Private -eq $true | Select -ExpandProperty Name)
-                ReleaseNotes     = $Manifest.ReleaseNotes
+            #Passthru
+            If ($Passthru)
+            {
+                [PSCustomObject]@{
+                    Name             = $ModuleName
+                    SourcePath       = $Path
+                    TargetPath       = $TargetPath
+                    ManifestPath     = $ManifestPath
+                    ModulePath       = $ModulePath
+                    ModuleVersion    = $ResultManifest.ModuleVersion
+                    RequiredVersion  = $ResultManifest.PowerShellVersion
+                    PublicFunctions  = @($FunctionNames | Where Private -eq $false | Select -ExpandProperty Name)
+                    PrivateFunctions = @($FunctionNames | Where Private -eq $true | Select -ExpandProperty Name)
+                    ReleaseNotes     = $ResultManifest.ReleaseNotes
+                }
             }
         }
 
