@@ -245,7 +245,7 @@ Function Invoke-PSModuleBuild {
             #Save the module file
             $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
             $Module | Out-File $ModulePath -Encoding ascii
-            Write-Verbose "Module created at: $TP as $ModuleName" -Verbose
+            Write-Verbose "Module created at: $TP as $ModuleName"
 
             #Passthru
             If ($Passthru)
