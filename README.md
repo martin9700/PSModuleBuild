@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild)
+[![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ACMESharp.svg?style=plastic)](https://www.powershellgallery.com/packages/PSModuleBuild)
 
 # TOPIC
 
