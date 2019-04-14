@@ -17,11 +17,12 @@ Function Invoke-PSModuleBuild {
             ^build\.ps1$
             \.psdeploy\.
 
-        Public and private functions are also support by creating the proper folder structure:
+        Public and private functions, as well as Classes, are also support by creating the proper folder structure:
 
         \Source
            \Public
            \Private
+           \Classes
 
         If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt
         file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed
@@ -99,6 +100,7 @@ Function Invoke-PSModuleBuild {
         1.0.15          Updated comment based help
         1.1             Added multiple target paths
         1.1.38          Fixed bug with release notes. Added IncrementVersion
+        1.2             Added Class support
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
@@ -176,16 +178,29 @@ Function Invoke-PSModuleBuild {
         $HighVersion = [version]"2.0"
 
         Write-Verbose "$(Get-Date): Searching for ps1 files and include.txt for module"
-        #Retrieve Include.txt file(s)
-        $Files = Get-ChildItem $Path\Include.txt -Recurse | Sort FullName
-        ForEach ($File in $Files)
-        {
-            $Raw = Get-Content $File
-            $null = $Module.Add($Raw)
-        }
 
         #Retrieve ps1 files
-        $Files = Get-ChildItem $Path\*.ps1 -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|^build\.ps1|\.psdeploy\." | Sort FullName
+        $Files = New-Object -TypeName System.Collections.ArrayList
+        $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|build\.ps1|\.psdeploy\." | Sort Name
+        
+        #Include.txt always goes first
+        $null = $Files.Add(($RawFiles | Where Name -eq "include.txt"))
+
+        #Classes next
+        ForEach ($File in ($RawFiles | Where FullName -like "*Classes*"))
+        {
+            $null = $Files.Add($File)
+        }
+
+        #All the rest
+        ForEach ($File in $RawFiles)
+        {
+            If (-not $Files.Contains($File))
+            {
+                $null = $Files.Add($File)
+            }
+        }
+            
         ForEach ($File in $Files)
         {
             $Raw = Get-Content $File -Raw
