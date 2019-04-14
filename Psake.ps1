@@ -38,26 +38,14 @@ Task Analyze -Depends Init {
 }
 
 Task Build -Depends Analyze {
-    Invoke-PSModuleBuild @ModuleInformation
+    
 }
 
 Task Test -Depends Build  {
     # Gather test results. Store them in a variable and file
-    $TestResults = Invoke-Pester -PassThru -OutputFormat NUnitXml -OutputFile ".\TestResults.xml"
-    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",(Resolve-Path ".\TestResults.xml"))
     
-    If ($TestResults.FailedCount -gt 0)
-    {
-        Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed" -ErrorAction Stop
-    }
 }
 
-Task Deploy -Depends Test -Precondition { $ENV:APPVEYOR_FORCED_BUILD -eq "True" } {
-    Try {
-        Publish-Module @PublishInformation -ErrorAction Stop
-        Write-Host "Publish to PSGallery successful" -ForegroundColor Green
-    }
-    Catch {
-        Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
+Task Deploy -Depends Test -Precondition {    Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
     }
 }
