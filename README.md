@@ -31,10 +31,22 @@ I tried to make PSModuleBuild friendly to CI/CD, specifically some of the commun
 Include.txt
 ===========
 If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at the beginning of the file you can.
-	
+
+
 Public/Private Functions
 ========================
 PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private folder and place your function files appropriately.  
+
+
+Classes
+=======
+PSModuleBuild will now support classes.  Create a folder called Classes and put your code in there.
+
+Note: you may run into a situation where one class is required by another class, if this happens you will need to make sure the names of the classes are sortable so that any pre-requisite classes load first.  Example:
+
+    a.firstclass.ps1
+    b.secondclass.ps1
+    
 	
 
 # EXAMPLES
@@ -119,9 +131,9 @@ Need to deploy the module to multiple paths?  Maybe you have a primary productio
 
 # SEE ALSO
 
-Continuous Integration
-- Continuous Deployment
-- PSDeploy
-- Psake
-- PSScriptAnalyzer
+- [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration)
+- [Continuous Deployment](https://en.wikipedia.org/wiki/Continuous_deployment)
+- [PSDeploy](https://github.com/RamblingCookieMonster/PSDeploy)
+- [Psake](https://github.com/psake/psake)
+- [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)
 	
