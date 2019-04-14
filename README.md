@@ -1,14 +1,10 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/7w0yl0tn1ut71cek?svg=true)](https://ci.appveyor.com/project/MartinPugh/psmodulebuild) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSModuleBuild.svg?style=plastic)](https://www.powershellgallery.com/packages/PSModuleBuild)
 
-# TOPIC
 
-Building PowerShell Modules with PSModuleBuild
-
-# SHORT DESCRIPTION
+# DESCRIPTION
 Creating a PowerShell module can be hard, and maintaining it can be even harder.  PSModuleBuild has been designed to make both tasks easier.  In short, you put all of your advanced functions into individual .ps1 files and then invoke PSModuleBuild and let it collect all the functions into a PowerShell module file (.psm1) and create the PowerShell module manifest file (.psd1).
-	
-# DETAILED DESCRIPTION
-	
+
+
 Installation
 ============
 Use the PowerShell Gallery to install PSModuleBuild:
@@ -31,10 +27,22 @@ I tried to make PSModuleBuild friendly to CI/CD, specifically some of the commun
 Include.txt
 ===========
 If you have any scripts or cmdlets that need to be run at Import-Module time, you can put them in an Include.txt file and PSModuleBuild will read this file first and put it in the module file first.  This is not strictly needed as PSModuleBuild will read in all .ps1 files and put them in but if you'd like to make sure these commands are run at the beginning of the file you can.
-	
+
+
 Public/Private Functions
 ========================
 PSModuleBuild will support public and private functions as well.  In your project folder create a Public folder and a Private folder and place your function files appropriately.  
+
+
+Classes
+=======
+PSModuleBuild will now support classes.  Create a folder called Classes and put your code in there.
+
+Note: you may run into a situation where one class is required by another class, if this happens you will need to make sure the names of the classes are sortable so that any pre-requisite classes load first.  Example:
+
+    a.firstclass.ps1
+    b.secondclass.ps1
+    
 	
 
 # EXAMPLES
@@ -119,9 +127,9 @@ Need to deploy the module to multiple paths?  Maybe you have a primary productio
 
 # SEE ALSO
 
-Continuous Integration
-- Continuous Deployment
-- PSDeploy
-- Psake
-- PSScriptAnalyzer
+- [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration)
+- [Continuous Deployment](https://en.wikipedia.org/wiki/Continuous_deployment)
+- [PSDeploy](https://github.com/RamblingCookieMonster/PSDeploy)
+- [Psake](https://github.com/psake/psake)
+- [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)
 	

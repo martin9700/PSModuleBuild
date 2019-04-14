@@ -1,5 +1,7 @@
 ﻿#Set up
-$ScriptPath = $PSScriptRoot
+$ScriptPath = $ENV:APPVEYOR_BUILD_FOLDER
+#Non-appveyor testing
+#$ScriptPath = "c:\dropbox\github\PSModuleBuild"
 . $ScriptPath\Source\Public\Invoke-PSModuleBuild.ps1
 . $ScriptPath\Source\Private\CreateUpdateManifest.ps1
 
@@ -12,6 +14,7 @@ Describe "Testing Invoke-PSModuleBuild module builds" {
         New-Item $ScriptPath\Test-Module\Source -ItemType Directory
         New-Item $ScriptPath\Test-Module\Source\Public -ItemType Directory
         New-Item $ScriptPath\Test-Module\Source\Private -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Classes -ItemType Directory
         New-Item $ScriptPath\Test-Module\Source\Tests -ItemType Directory
 
         "#Include.txt" | Out-File $ScriptPath\Test-Module\Source\include.txt
@@ -40,7 +43,15 @@ Function check-me { <#this is a test#> }
 Function check-m2e{ <#this is a test#> }
 "@
         $Module | Out-File $ScriptPath\Test-Module\Source\Public\PublicFunction.ps1
+        $Class = @"
+Class TestBuild
+{
+    [string]`$test
+}
+"@
+        $Class | Out-File $ScriptPath\Test-Module\Source\Classes\Class.ps1      
         Start-Sleep -Milliseconds 500
+
         It "Initial Build" {
             { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
         }
@@ -73,6 +84,18 @@ Function check-m2e{ <#this is a test#> }
         It "Include.txt exists in module file" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
             $Search.Count | Should Be 1
+        }
+        It "Include.txt is the first line" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
+            $Search.LineNumber | Should Be 1
+        }
+        It "Class exists in module file" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
+            $Search.Count | Should Be 1
+        }
+        It "Class should be next after Include.txt" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
+            $Search.LineNumber | Should Be 3
         }
     }
     Context "Update existing build" {
