@@ -1,5 +1,5 @@
 ﻿#Set up
-$ScriptPath = $PSScriptRoot
+$ScriptPath = $ENV:APPVEYOR_BUILD_FOLDER
 #Non-appveyor testing
 #$ScriptPath = "c:\dropbox\github\PSModuleBuild"
 . $ScriptPath\Source\Public\Invoke-PSModuleBuild.ps1
