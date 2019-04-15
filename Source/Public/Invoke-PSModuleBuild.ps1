@@ -211,9 +211,15 @@ Function Invoke-PSModuleBuild {
             
         ForEach ($File in $Files)
         {
-            $Raw = Get-Content $File -Raw
+            $Raw = Get-Content -Path $File.FullName -Raw
+            If (-not $Raw)
+            {
+                Write-Warning "File ""$($File.Name)"" is empty, skipping"
+                Continue
+            }
+
             $Private = $false
-            If ($File.DirectoryName -like "*Private*")
+            If ($File.DirectoryName -like "*Private*" -or $File.DirectoryName -like "*classes*")
             {
                 $Private = $true
             }
