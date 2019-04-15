@@ -13,5 +13,5 @@ build:
   verbosity: detailed
   
 build_script:
-  - ps: $env:PSGalleryAPIKey
+  - ps: write-host "..$($env:PSGalleryAPIKey).."
   - ps: . .\fixbuild.ps1
