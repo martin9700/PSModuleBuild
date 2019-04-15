@@ -17,7 +17,6 @@ Describe "Testing Invoke-PSModuleBuild module builds" {
         New-Item $ScriptPath\Test-Module\Source\Classes -ItemType Directory
         New-Item $ScriptPath\Test-Module\Source\Tests -ItemType Directory
 
-        "#Include.txt" | Out-File $ScriptPath\Test-Module\Source\include.txt
         "Function Private-Function { <#this is a test#> }" | Out-File $ScriptPath\Test-Module\Source\Private\PrivateFunction.ps1
         "#Testfile" | Out-File $ScriptPath\Test-Module\Source\Tests\test.ps1
         $Module = @"
@@ -52,7 +51,7 @@ Class TestBuild
         $Class | Out-File $ScriptPath\Test-Module\Source\Classes\Class.ps1      
         Start-Sleep -Milliseconds 500
 
-        It "Initial Build" {
+        It "Initial Build without include.txt" {
             { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
         }
         It "Manifest exists" {
@@ -81,6 +80,28 @@ Class TestBuild
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Function check-me { <#this is a test#> }"
             $Search.Count | Should Be 1
         }
+        It "Include.txt is not present" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
+            $Search | Should BeNullOrEmpty
+        }
+        It "Class exists in module file" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
+            $Search.Count | Should Be 1
+        }
+        It "Class should be first" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
+            $Search.LineNumber | Should Be 1
+        }
+    }
+    
+    Context "Initial Build with include.txt" {
+        "#Include.txt" | Out-File $ScriptPath\Test-Module\Source\include.txt
+        Remove-Item $ScriptPath\Test-Module\Test-Module.psm1
+        Remove-Item $ScriptPath\Test-Module\Test-Module.psd1
+
+        It "Build with include.txt" {
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
+        }
         It "Include.txt exists in module file" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
             $Search.Count | Should Be 1
@@ -89,15 +110,12 @@ Class TestBuild
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "#Include.txt"
             $Search.LineNumber | Should Be 1
         }
-        It "Class exists in module file" {
-            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
-            $Search.Count | Should Be 1
-        }
         It "Class should be next after Include.txt" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
             $Search.LineNumber | Should Be 3
         }
     }
+
     Context "Update existing build" {
         $Module = @"
 Function Test1 {
