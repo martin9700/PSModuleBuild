@@ -24,7 +24,6 @@ If ($Results)
 #
 #Build
 #
-Import-Module PSModuleBuild
 $ModuleInformation = @{
     Path            = "$ENV:APPVEYOR_BUILD_FOLDER\Source"
     TargetPath      = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
@@ -41,17 +40,13 @@ $ModuleInformation = @{
 }
 
 #Using my module to build and test my module. The irony is not lost
+Import-Module PSModuleBuild
 Invoke-PSModuleBuild @ModuleInformation
 
 
 #
 # Test
 #
-# Remove previously loaded module
-Remove-Module PSModuleBuild
-
-#Import newly built one
-Import-Module "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
 Import-Module Pester
 
 $TestResults = Invoke-Pester -PassThru -OutputFormat NUnitXml -OutputFile ".\TestResults.xml"
