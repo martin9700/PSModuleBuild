@@ -182,7 +182,7 @@ Function Invoke-PSModuleBuild {
 
         #Retrieve ps1 files
         $Files = New-Object -TypeName System.Collections.ArrayList
-        $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|build\.ps1|\.psdeploy\." | Sort Name
+        $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|^build\.ps1|\.psdeploy\." | Sort Name
         
         #Include.txt always goes first
         $IncludeFiles = $RawFiles | Where Name -eq "include.txt"
@@ -269,7 +269,7 @@ Function Invoke-PSModuleBuild {
         {
             #Save the manifest
             $ManifestPath = Join-Path -Path $TP -ChildPath "$ModuleName.psd1"
-            $ResultManifest = CreateUpdateManifest -Manifest $NewManifest.Clone() -OldManifestPath $ManifestPath
+            $ResultManifest = CreateUpdateManifest -Manifest $NewManifest.Clone() -OldManifestPath $ManifestPath -FunctionNames $FunctionNames
 
             #Save the module file
             $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
