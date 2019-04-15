@@ -101,6 +101,7 @@ Function Invoke-PSModuleBuild {
         1.1             Added multiple target paths
         1.1.38          Fixed bug with release notes. Added IncrementVersion
         1.2             Added Class support
+        1.2.x           Found bug in $Files collection, have to make sure no nulls
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
@@ -184,7 +185,14 @@ Function Invoke-PSModuleBuild {
         $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|build\.ps1|\.psdeploy\." | Sort Name
         
         #Include.txt always goes first
-        $null = $Files.Add(($RawFiles | Where Name -eq "include.txt"))
+        $IncludeFiles = $RawFiles | Where Name -eq "include.txt"
+        If ($IncludeFiles)
+        {
+            ForEach ($File in $IncludeFiles)
+            {
+                $null = $Files.Add($File)
+            }
+        }
 
         #Classes next
         ForEach ($File in ($RawFiles | Where FullName -like "*Classes*"))
