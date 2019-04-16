@@ -89,4 +89,4 @@ If ($ENV:PSGalleryAPIKey)
 # Completed
 #
 $Stopwatch.Stop()
-Write-Verbose -Verbose -Message "$(Get-Date): Merge completed in $($Stopwatch.Elapsed)"
+Write-Verbose -Verbose -Message "$(Get-Date): Build completed in $($Stopwatch.Elapsed)"
