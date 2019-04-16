@@ -1,9 +1,11 @@
 ﻿#Set up
 $ScriptPath = $ENV:APPVEYOR_BUILD_FOLDER
-#Non-appveyor testing
-#$ScriptPath = "c:\dropbox\github\PSModuleBuild"
+Import-Module "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
+<#Non-appveyor testing
+$ScriptPath = "c:\dropbox\github\PSModuleBuild"
 . $ScriptPath\Source\Public\Invoke-PSModuleBuild.ps1
 . $ScriptPath\Source\Private\CreateUpdateManifest.ps1
+#>
 
 #Clean up
 Remove-Item $ScriptPath\Test-Module -Recurse -Force -ErrorAction SilentlyContinue
