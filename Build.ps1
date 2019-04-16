@@ -1,4 +1,7 @@
-﻿# Grab nuget bits, install modules, start build.
+﻿Write-Verbose -Verbose -Message "$(Get-Date): Preparing environment"
+$Stopwatch = [system.diagnostics.stopwatch]::StartNew()
+
+# Grab nuget bits, install modules, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 #Now PSGallery
@@ -10,6 +13,7 @@ Install-Module Pester,PSScriptAnalyzer,PSModuleBuild
 #
 #Analyse source
 #
+Write-Verbose -Verbose -Message "$(Get-Date): Analyzing code"
 Set-Location $ENV:APPVEYOR_BUILD_FOLDER
 
 Import-Module PSScriptAnalyzer
@@ -24,6 +28,7 @@ If ($Results)
 #
 #Build
 #
+Write-Verbose -Verbose -Message "$(Get-Date): Building module" 
 $ModuleInformation = @{
     Path            = "$ENV:APPVEYOR_BUILD_FOLDER\Source"
     TargetPath      = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
@@ -47,6 +52,7 @@ Invoke-PSModuleBuild @ModuleInformation
 #
 # Test
 #
+Write-Verbose -Verbose -Message "$(Get-Date): Running tests"
 Import-Module Pester
 
 $TestResults = Invoke-Pester -PassThru -OutputFormat NUnitXml -OutputFile ".\TestResults.xml"
@@ -61,8 +67,9 @@ If ($TestResults.FailedCount -gt 0)
 #
 # Deploy
 #
-If ($ENV:APPVEYOR_FORCED_BUILD -eq "True")
+If ($ENV:PSGalleryAPIKey)
 {
+    Write-Verbose -Verbose -Message "$(Get-Date): Merge detected, publishing to PSGallery"
     $PublishInformation = @{
         Path            = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
         Force           = $true
@@ -77,3 +84,9 @@ If ($ENV:APPVEYOR_FORCED_BUILD -eq "True")
         Write-Error "Publish to PSGallery failed because ""$_""" -ErrorAction Stop
     }
 }
+
+#
+# Completed
+#
+$Stopwatch.Stop()
+Write-Verbose -Verbose -Message "$(Get-Date): Merge completed in $($Stopwatch.Elapsed)"
