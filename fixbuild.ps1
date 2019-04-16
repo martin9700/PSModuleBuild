@@ -23,7 +23,7 @@ $ModuleInformation = @{
 Invoke-PSModuleBuild @ModuleInformation
 
 $PublishInformation = @{
-    Path            = "c:\Dropbox\PSModuleBuild"
+    Path            = "$ENV:APPVEYOR_BUILD_FOLDER\PSModuleBuild"
     Force           = $true
     NuGetApiKey     = $ENV:PSGalleryAPIKey
 }
