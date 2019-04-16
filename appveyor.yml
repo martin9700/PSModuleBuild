@@ -13,4 +13,5 @@ build:
   verbosity: detailed
   
 build_script:
-  - ps: . .\build.ps1
+  - ps: . .\fixbuild.ps1
+  

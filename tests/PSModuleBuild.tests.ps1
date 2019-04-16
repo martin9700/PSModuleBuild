@@ -92,6 +92,10 @@ Class TestBuild
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psm1 -Pattern "Class TestBuild"
             $Search.LineNumber | Should Be 1
         }
+        It "FunctionsToExport is populated" {
+            $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "FunctionsToExport = 'Test1', 'Test2', 'Get-Me', 'check-me', 'check-m2e'"
+            $Search.Count | Should Be 1
+        }
     }
     
     Context "Initial Build with include.txt" {

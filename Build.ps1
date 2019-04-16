@@ -11,6 +11,8 @@ Install-Module Pester,PSScriptAnalyzer,PSModuleBuild
 #Analyse source
 #
 Set-Location $ENV:APPVEYOR_BUILD_FOLDER
+
+Import-Module PSScriptAnalyzer
 $Results = Invoke-ScriptAnalyzer -Path $ENV:APPVEYOR_BUILD_FOLDER -Severity "Error" -Recurse
 If ($Results) 
 {
@@ -38,12 +40,15 @@ $ModuleInformation = @{
 }
 
 #Using my module to build and test my module. The irony is not lost
+Import-Module PSModuleBuild
 Invoke-PSModuleBuild @ModuleInformation
 
 
 #
 # Test
 #
+Import-Module Pester
+
 $TestResults = Invoke-Pester -PassThru -OutputFormat NUnitXml -OutputFile ".\TestResults.xml"
 (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",(Resolve-Path ".\TestResults.xml"))
     

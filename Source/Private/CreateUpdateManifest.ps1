@@ -3,7 +3,8 @@
     [CmdletBinding()]
     Param (
         [hashtable]$Manifest,
-        [string]$OldManifestPath
+        [string]$OldManifestPath,
+        [System.Collections.ArrayList]$FunctionNames
     )
 
     If (Test-Path $OldManifestPath)
