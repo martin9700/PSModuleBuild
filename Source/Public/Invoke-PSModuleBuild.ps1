@@ -102,6 +102,8 @@ Function Invoke-PSModuleBuild {
         1.1.38          Fixed bug with release notes. Added IncrementVersion
         1.2             Added Class support
         1.2.x           Found bug in $Files collection, have to make sure no nulls
+        1.2.x           Found bug where classes that have multiple functions (a common thing in a class) are being rejected. Simply going to remove that functionality
+                        when processing files in the Classes folder.
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
@@ -237,16 +239,19 @@ Function Invoke-PSModuleBuild {
 
             ForEach ($Name in ($AST.FindAll($FunctionPredicate, $true) | Select -ExpandProperty Name))
             {
-                If ($FunctionNames.Name -contains $Name)
+                If ($FunctionNames.Name -contains $Name -and $File.Directory -notlike "*classes*")
                 {
                     Write-Error "Your module has duplicate function names: $Name.  Duplicate found in $($File.FullName)" -ErrorAction Stop
                 }
                 Else
                 {
-                    $null = $FunctionNames.Add([PSCustomObject]@{
-                        Name = $Name
-                        Private = $Private
-                    })
+                    If ($FunctionNames.Name -notcontains $Name)
+                    {
+                        $null = $FunctionNames.Add([PSCustomObject]@{
+                            Name = $Name
+                            Private = $Private
+                        })
+                    }
                 }
             }
 
