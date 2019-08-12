@@ -42,6 +42,7 @@ $ModuleInformation = @{
     LicenseURI      = "https://github.com/martin9700/PSModuleBuild/blob/master/LICENSE"
     IconURI         = "https://pughspace.files.wordpress.com/2017/01/pspublishmodule-icon.png"
     PassThru        = $true
+    Include         = "Includes"
 }
 
 #Using my module to build and test my module. The irony is not lost
