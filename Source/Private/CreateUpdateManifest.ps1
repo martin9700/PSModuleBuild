@@ -21,7 +21,7 @@
         $Manifest.ReleaseNotes = $ReleaseNotes + $OldManifest.PrivateData.PSData.ReleaseNotes
         $Manifest.Path = $OldManifestPath
         $Manifest.PowerShellVersion = $HighVersion
-        $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
+        $Manifest.FunctionsToExport = $FunctionNames | Where-Object Private -eq $false | Select-Object -ExpandProperty Name
         If (-not $Manifest.ModuleVersion)
         {
             $VersionNum = [ordered]@{}
@@ -77,7 +77,7 @@
         $Manifest.RootModule = $ModuleName
         $Manifest.Path = $OldManifestPath
         $Manifest.PowerShellVersion = "$($HighVersion.Major).$($HighVersion.Minor)"
-        $Manifest.FunctionsToExport = $FunctionNames | Where Private -eq $false | Select -ExpandProperty Name
+        $Manifest.FunctionsToExport = $FunctionNames | Where-Object Private -eq $false | Select-Object -ExpandProperty Name
         If ($ReleaseNotes)
         {
             $Manifest.ReleaseNotes = $ReleaseNotes | Out-String

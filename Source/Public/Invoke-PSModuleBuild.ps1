@@ -31,10 +31,10 @@ Function Invoke-PSModuleBuild {
 
 
     .PARAMETER Path
-        The path where you module folders and PS1 files containing your functions is located.
+        The path Where-Object you module folders and PS1 files containing your functions is located.
 
     .PARAMETER TargetPath
-        The path where you want the module and manifest files to be located. If the folder does not exist Invoke-PSModuleBuild will create it, if
+        The path Where-Object you want the module and manifest files to be located. If the folder does not exist Invoke-PSModuleBuild will create it, if
         it is not designated it will use the Path location.  Multiple folder paths can be designated as well if you want to deploy to multiple
         locations.
 
@@ -102,8 +102,10 @@ Function Invoke-PSModuleBuild {
         1.1.38          Fixed bug with release notes. Added IncrementVersion
         1.2             Added Class support
         1.2.x           Found bug in $Files collection, have to make sure no nulls
-        1.2.x           Found bug where classes that have multiple functions (a common thing in a class) are being rejected. Simply going to remove that functionality
+        1.2.x           Found bug Where-Object classes that have multiple functions (a common thing in a class) are being rejected. Simply going to remove that functionality
                         when processing files in the Classes folder.
+        1.3             Added Include parameter to specify additional files to include in the module. Files/Folders will
+                        be copied into the TargetPath(s).
     .LINK
         https://github.com/martin9700/PSModuleBuild
     #>
@@ -116,7 +118,8 @@ Function Invoke-PSModuleBuild {
         [switch]$Passthru,
         [string[]]$ReleaseNotes,
         [ValidateSet("None","Last","Major","Minor","Build","Revision")]
-        [string]$IncrementVersion = "Last"
+        [string]$IncrementVersion = "Last",
+        [string[]]$Include
     )
     DynamicParam {
         # Create the dictionary that this scriptblock will return:
@@ -172,22 +175,26 @@ Function Invoke-PSModuleBuild {
 
         If (-not $ModuleName)
         {
-            $ModuleName = Get-ItemProperty -Path $Path | Select -ExpandProperty BaseName
+            $ModuleName = Get-ItemProperty -Path $Path | Select-Object -ExpandProperty BaseName
         }
 
         $Module = New-Object -TypeName System.Collections.ArrayList
         $FunctionNames = New-Object -TypeName System.Collections.ArrayList
-        $FunctionPredicate = { ($args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]) }
+        $FunctionPredicate = { 
+            ($args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]) 
+        }
         $HighVersion = [version]"2.0"
 
         Write-Verbose "$(Get-Date): Searching for ps1 files and include.txt for module"
 
         #Retrieve ps1 files
         $Files = New-Object -TypeName System.Collections.ArrayList
-        $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | Where FullName -NotMatch "Exclude|Tests|psake\.ps1|^build\.ps1|\.psdeploy\." | Sort Name
+        $RawFiles = Get-ChildItem $Path -Include *.ps1,include.txt -File -Recurse | 
+            Where-Object FullName -NotMatch "Exclude|Tests|psake\.ps1|^build\.ps1|\.psdeploy\." | 
+            Sort-Object Name
         
         #Include.txt always goes first
-        $IncludeFiles = $RawFiles | Where Name -eq "include.txt"
+        $IncludeFiles = $RawFiles | Where-Object Name -eq "include.txt"
         If ($IncludeFiles)
         {
             ForEach ($File in $IncludeFiles)
@@ -197,7 +204,7 @@ Function Invoke-PSModuleBuild {
         }
 
         #Classes next
-        ForEach ($File in ($RawFiles | Where FullName -like "*Classes*"))
+        ForEach ($File in ($RawFiles | Where-Object FullName -like "*Classes*"))
         {
             $null = $Files.Add($File)
         }
@@ -237,7 +244,7 @@ Function Invoke-PSModuleBuild {
                 Write-Error "Unable to parse $($File.FullName) because ""$ParseError""" -ErrorAction Stop
             }
 
-            ForEach ($Name in ($AST.FindAll($FunctionPredicate, $true) | Select -ExpandProperty Name))
+            ForEach ($Name in ($AST.FindAll($FunctionPredicate, $true) | Select-Object -ExpandProperty Name))
             {
                 If ($FunctionNames.Name -contains $Name -and $File.Directory -notlike "*classes*")
                 {
@@ -265,13 +272,23 @@ Function Invoke-PSModuleBuild {
         Write-Verbose "$(Get-Date): Creating/Updating module manifest and module file"
         $NewManifest = @{}
         
-
-        ForEach ($Key in ($PSBoundParameters.GetEnumerator() | Where { $_.Key -NotMatch "Path|Passthru|ModuleName|IncrementVersion" -and $CommonParams -notcontains $_.Key }))
+        $Keys = $PSBoundParameters.GetEnumerator() | 
+            Where-Object { $_.Key -NotMatch "Path|Passthru|ModuleName|IncrementVersion|Include" -and $CommonParams -notcontains $_.Key }
+        ForEach ($Key in $Keys)
         {
             $NewManifest.Add($Key.Key,$Key.Value)
         }
         ForEach ($TP in $TargetPath)
         {
+            # Copy Include files
+            If ($Include)
+            {
+                ForEach ($IncPath in $Include)
+                {
+                    $FullPath = Join-Path -Path $Path -ChildPath $IncPath
+                    Copy-Item -Path $FullPath\* -Destination $TP -Recurse
+                }
+            }
             #Save the manifest
             $ManifestPath = Join-Path -Path $TP -ChildPath "$ModuleName.psd1"
             $ResultManifest = CreateUpdateManifest -Manifest $NewManifest.Clone() -OldManifestPath $ManifestPath -FunctionNames $FunctionNames
@@ -280,22 +297,22 @@ Function Invoke-PSModuleBuild {
             $ModulePath = Join-Path -Path $TP -ChildPath "$ModuleName.psm1"
             $Module | Out-File $ModulePath -Encoding ascii
             Write-Verbose "Module created at: $TP as $ModuleName"
+        }
 
-            #Passthru
-            If ($Passthru)
-            {
-                [PSCustomObject]@{
-                    Name             = $ModuleName
-                    SourcePath       = $Path
-                    TargetPath       = $TargetPath
-                    ManifestPath     = $ManifestPath
-                    ModulePath       = $ModulePath
-                    ModuleVersion    = $ResultManifest.ModuleVersion
-                    RequiredVersion  = $ResultManifest.PowerShellVersion
-                    PublicFunctions  = @($FunctionNames | Where Private -eq $false | Select -ExpandProperty Name)
-                    PrivateFunctions = @($FunctionNames | Where Private -eq $true | Select -ExpandProperty Name)
-                    ReleaseNotes     = $ResultManifest.ReleaseNotes
-                }
+        #Passthru
+        If ($Passthru)
+        {
+            [PSCustomObject]@{
+                Name             = $ModuleName
+                SourcePath       = $Path
+                TargetPath       = $TargetPath
+                ManifestPath     = $ManifestPath
+                ModulePath       = $ModulePath
+                ModuleVersion    = $ResultManifest.ModuleVersion
+                RequiredVersion  = $ResultManifest.PowerShellVersion
+                PublicFunctions  = @($FunctionNames | Where-Object Private -eq $false | Select-Object -ExpandProperty Name)
+                PrivateFunctions = @($FunctionNames | Where-Object Private -eq $true | Select-Object -ExpandProperty Name)
+                ReleaseNotes     = $ResultManifest.ReleaseNotes
             }
         }
 
