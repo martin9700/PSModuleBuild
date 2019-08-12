@@ -59,6 +59,10 @@ Function Invoke-PSModuleBuild {
 
         Default settings is "Last"
 
+    .PARAMETER Include
+        Use the Include parameter to specify additional files (help files, xml, etc) that you want to include in the
+        module.
+
     .INPUTS
         None
     
