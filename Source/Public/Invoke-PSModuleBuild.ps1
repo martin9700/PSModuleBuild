@@ -291,7 +291,7 @@ Function Invoke-PSModuleBuild {
                     {
                         $FullPath = Join-Path -Path $FullPath -ChildPath "*"
                     }
-                    Copy-Item -Path $FullPath -Destination $TP -Recurse
+                    Copy-Item -Path $FullPath -Destination $TP -Recurse -Force
                 }
             }
             #Save the manifest
