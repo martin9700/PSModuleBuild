@@ -286,7 +286,12 @@ Function Invoke-PSModuleBuild {
                 ForEach ($IncPath in $Include)
                 {
                     $FullPath = Join-Path -Path $Path -ChildPath $IncPath
-                    Copy-Item -Path $FullPath\* -Destination $TP -Recurse
+                    $Property = Get-ItemProperty -Path $FullPath
+                    If (($Property.Attributes -band ([Io.FileAttributes]::Directory).ToString()) -eq "Directory")
+                    {
+                        $FullPath = Join-Path -Path $FullPath -ChildPath "*"
+                    }
+                    Copy-Item -Path $FullPath -Destination $TP -Recurse
                 }
             }
             #Save the manifest
