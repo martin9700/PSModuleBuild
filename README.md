@@ -93,6 +93,17 @@ c:\ProjectFolder\Source\Includes".
 	   Includes     = "Includes"
 	}
 	Invoke-PSModuleBuild @BuildSplat
+
+The folder structure for Includes could be:
+	..\Includes
+	  \Includes\en-US
+	  \Includes\en-US\about_NewModule
+	  \Includes\Templates
+	  \Includes\Templates\file1.xml
+	  \Includes\Templates\file2.xml
+
+Both the en-US and Templates folders (and their contents) will be included in the module.
+
 	
 	
 Advanced - Include source files in the module
