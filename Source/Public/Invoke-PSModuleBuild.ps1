@@ -59,6 +59,10 @@ Function Invoke-PSModuleBuild {
 
         Default settings is "Last"
 
+    .PARAMETER Include
+        Use the Include parameter to specify additional files (help files, xml, etc) that you want to include in the
+        module.
+
     .INPUTS
         None
     
@@ -286,7 +290,13 @@ Function Invoke-PSModuleBuild {
                 ForEach ($IncPath in $Include)
                 {
                     $FullPath = Join-Path -Path $Path -ChildPath $IncPath
-                    $Property = Get-ItemProperty -Path $FullPath
+                    Try {
+                        $Property = Get-ItemProperty -Path $FullPath -ErrorAction Stop
+                    }
+                    Catch {
+                        Write-Error $_
+                        Continue
+                    }
                     If (($Property.Attributes -band ([Io.FileAttributes]::Directory).ToString()) -eq "Directory")
                     {
                         $FullPath = Join-Path -Path $FullPath -ChildPath "*"

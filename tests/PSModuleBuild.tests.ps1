@@ -13,11 +13,13 @@ Remove-Item $ScriptPath\Test-Module -Recurse -Force -ErrorAction SilentlyContinu
 #Testing
 Describe "Testing Invoke-PSModuleBuild module builds" {
     Context "Scratch build" {
-        New-Item $ScriptPath\Test-Module\Source -ItemType Directory
-        New-Item $ScriptPath\Test-Module\Source\Public -ItemType Directory
-        New-Item $ScriptPath\Test-Module\Source\Private -ItemType Directory
-        New-Item $ScriptPath\Test-Module\Source\Classes -ItemType Directory
-        New-Item $ScriptPath\Test-Module\Source\Tests -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source                -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Public         -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Private        -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Classes        -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Tests          -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Includes       -ItemType Directory
+        New-Item $ScriptPath\Test-Module\Source\Includes\en-US -ItemType Directory
 
         "Function Private-Function { <#this is a test#> }" | Out-File $ScriptPath\Test-Module\Source\Private\PrivateFunction.ps1
         "#Testfile" | Out-File $ScriptPath\Test-Module\Source\Tests\test.ps1
@@ -50,11 +52,12 @@ Class TestBuild
     [string]`$test
 }
 "@
-        $Class | Out-File $ScriptPath\Test-Module\Source\Classes\Class.ps1      
+        $Class | Out-File $ScriptPath\Test-Module\Source\Classes\Class.ps1 
+        "This is a <template> file to be included in the module" | Out-File $ScriptPath\Test-Module\Source\Includes\en-US\test.xml      
         Start-Sleep -Milliseconds 500
 
         It "Initial Build without include.txt" {
-            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module } | Should Not Throw
+            { Invoke-PSModuleBuild -Path $ScriptPath\Test-Module -Include "Source\Includes" } | Should Not Throw
         }
         It "Manifest exists" {
             Test-Path $ScriptPath\Test-Module\Test-Module.psd1 | Should Be True
@@ -97,6 +100,18 @@ Class TestBuild
         It "FunctionsToExport is populated" {
             $Search = Select-String -Path $ScriptPath\Test-Module\Test-Module.psd1 -Pattern "FunctionsToExport = 'Test1', 'Test2', 'Get-Me', 'check-me', 'check-m2e'"
             $Search.Count | Should Be 1
+        }
+        It "en-US folder present" {
+            $Search = Test-Path -Path $ScriptPath\Test-Module\en-US
+            $Search | Should Be $true
+        }
+        It "test.xml is present" {
+            $Search = Test-Path -Path $ScriptPath\Test-Module\en-US\test.xml
+            $Search | Should Be $true
+        }
+        It "test.xml was properly copied" {
+            $Search = Get-Content -Path $ScriptPath\Test-Module\en-US\test.xml
+            $Search | Should Be "This is a <template> file to be included in the module"
         }
     }
     

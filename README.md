@@ -58,71 +58,99 @@ This will read all of the function files in c:\YourModule and create a module na
 Intermediate
 ------------
 Same as simple, but you want to put more information in:
-	
-	$BuildSplat = @{
-	   Path = "c:\YourModule"   
-	   TargetPath = "c:\NewModule"
-	   ModuleName = "NewModule"
-	   Author = "@thesurlyadm1n"
-	   Description = "This is that new module I've been working on"
-	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
-	   ReleaseNotes = "Initial commit"
-	   Passthru = $true   #I love feedback
-	}
-	Invoke-PSModuleBuild @BuildSplat
+
+```powershell	
+$BuildSplat = @{
+	Path         = "c:\YourModule"   
+	TargetPath   = "c:\NewModule"
+	ModuleName   = "NewModule"
+	Author       = "@thesurlyadm1n"
+	Description  = "This is that new module I've been working on"
+	ProjectURI   = "https://github.com/martin9700/PSModuleBuild"
+	ReleaseNotes = "Initial commit"
+	Passthru     = $true   #I love feedback
+}
+Invoke-PSModuleBuild @BuildSplat
+```
 	
 This will create a new module, in a different location and fill the module manifest with the information.  Invoke-PSModuleBuild	supports all of the parameters from New-ModuleManifest.
 	
 	
 Advanced - Additional supporting files
 --------------------------------------
-If you have about files, or additional XML descriptor files, PSModuleBuild will support that.  First create a project folder, then create a source folder and place all of your function files in there.  Now create another folder with the name of your module (we'll use NewModule in this example) and place your about files, and other files there, in the proper folder structure (en-US, etc).
-	
-	$BuildSplat = @{
-	   Path = "c:\ProjectFolder\Source"   
-	   TargetPath = "c:\ProjectFolder\NewModule"
-	   ModuleName = "NewModule"
-	   Author = "@thesurlyadm1n"
-	   Description = "This is that new module I've been working on"
-	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
-	   ReleaseNotes = "Initial commit"
-	   Passthru = $true
-	}
-	Invoke-PSModuleBuild @BuildSplat
+If you have about files, or additional XML descriptor files, PSModuleBuild will support that using the Include parameter. All files and folders that you specify with include will be added to the TargetPath.  The name of 
+the file/folder is relative to the TargetPath, so Includes below would be in "c:\ProjectFolder\Source" and all 
+files and folders *under* Includes would be added to the module.  Path for "Includes" would be 
+c:\ProjectFolder\Source\Includes".
+
+```powershell	
+$BuildSplat = @{
+	Path         = "c:\ProjectFolder\Source"   
+	TargetPath   = "c:\ProjectFolder\NewModule"
+	ModuleName   = "NewModule"
+	Author       = "@thesurlyadm1n"
+	Description  = "This is that new module I've been working on"
+	ProjectURI   = "https://github.com/martin9700/PSModuleBuild"
+	ReleaseNotes = "Initial commit"
+	Passthru     = $true
+	Includes     = "Includes"
+}
+Invoke-PSModuleBuild @BuildSplat
+```
+
+
+The folder structure for Includes could be:
+```
+..\Includes
+  \Includes\en-US
+  \Includes\en-US\about_NewModule
+  \Includes\Templates
+  \Includes\Templates\file1.xml
+  \Includes\Templates\file2.xml
+```
+
+Both the en-US and Templates folders (and their contents) will be included in the module.
+
 	
 	
 Advanced - Include source files in the module
 ---------------------------------------------
-If you want to include the source function files in your module create a project folder, then create a folder with the name of your project and place all your function files (and other supporting files) in it.
-	
-	$BuildSplat = @{
-	   Path = "c:\ProjectFolder\NewModule"   
-	   TargetPath = "c:\ProjectFolder\NewModule"    #this is optional now, Invoke-PSModuleBuild goes here by default
-	   ModuleName = "NewModule"
-	   Author = "@thesurlyadm1n"
-	   Description = "This is that new module I've been working on"
-	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
-	   ReleaseNotes = "Initial commit"
-	   Passthru = $true
-	}
-	Invoke-PSModuleBuild @BuildSplat
+If you want to include the source function files in your module then specify those files with the Include 
+parameter.
+
+```powershell	
+$BuildSplat = @{
+	Path         = "c:\ProjectFolder\NewModule"   
+	TargetPath   = "c:\ProjectFolder\NewModule"
+	ModuleName   = "NewModule"
+	Author       = "@thesurlyadm1n"
+	Description  = "This is that new module I've been working on"
+	ProjectURI   = "https://github.com/martin9700/PSModuleBuild"
+	ReleaseNotes = "Initial commit"
+	Passthru     = $true
+	Include      = @("Includes","Private","Public")
+}
+Invoke-PSModuleBuild @BuildSplat
+```
 	
 	
 Advanced - Mulitple Target Paths
 --------------------------------
 Need to deploy the module to multiple paths?  Maybe you have a primary production location but also a process running in a DMZ?
-	
-	$BuildSplat = @{
-	   Path = "c:\ProjectFolder\NewModule\Source"   
-	   TargetPath = "c:\ProjectFolder\NewModule","\\dmzserver\share\Modules\NewModule" 
-	   ModuleName = "NewModule"
-	   Author = "@thesurlyadm1n"
-	   Description = "This is that new module I've been working on"
-	   ProjectURI = "https://github.com/martin9700/PSModuleBuild"
-	   ReleaseNotes = (git log -1 --pretty=%s) | Out-String   #Pull release notes from your git commits
-	   Passthru = $true
-	}
-	Invoke-PSModuleBuild @BuildSplat
+
+```powershell	
+$BuildSplat = @{
+	Path         = "c:\ProjectFolder\NewModule\Source"   
+	TargetPath   = "c:\ProjectFolder\NewModule","\\dmzserver\share\Modules\NewModule" 
+	ModuleName   = "NewModule"
+	Author       = "@thesurlyadm1n"
+	Description  = "This is that new module I've been working on"
+	ProjectURI   = "https://github.com/martin9700/PSModuleBuild"
+	ReleaseNotes = (git log -1 --pretty=%s) | Out-String   #Pull release notes from your git commits
+	Passthru     = $true
+}
+Invoke-PSModuleBuild @BuildSplat
+```
 
 
 # SEE ALSO
